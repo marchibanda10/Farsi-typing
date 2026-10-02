@@ -1,11 +1,1 @@
-{
-  "name": "تایپ‌ریسر فارسی",
-  "short_name": "تایپ‌ریسر",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#080c17",
-  "theme_color": "#0b1020",
-  "lang": "fa",
-  "dir": "rtl",
-  "icons": []
-}
+{"name":"تایپ‌ریسر فارسی","short_name":"تایپ‌ریسر","start_url":"./index.html","display":"standalone","background_color":"#080c17","theme_color":"#0b1020","lang":"fa","dir":"rtl","icons":[]}

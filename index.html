@@ -24,7 +24,7 @@ h1{font-size:22px;margin:0;font-weight:800}
 .trackline{height:9px;background:#252e46;border-radius:99px;overflow:hidden}
 .progress{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .15s}
 .textbox{background:rgba(17,24,42,.92);border:1px solid #273350;border-radius:20px;padding:20px 18px;margin-bottom:12px;min-height:190px}
-.prompt{font-size:23px;line-height:2.15;letter-spacing:.1px;direction:rtl;user-select:none}
+.prompt{font-size:23px;overflow-wrap:anywhere;word-break:normal;line-height:2.15;letter-spacing:.1px;direction:rtl;unicode-bidi:plaintext;user-select:none}
 .prompt .correct{color:var(--good)}.prompt .wrong{color:var(--bad);background:rgba(255,102,125,.13);border-radius:4px}.prompt .current{border-bottom:3px solid var(--accent)}
 textarea{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
 .inputbar{display:flex;gap:9px;align-items:center}
@@ -99,7 +99,7 @@ function render(){
    let c=target[i], cls="";
    if(i<typed.length) cls=typed[i]===c?"correct":"wrong";
    else if(i===typed.length) cls="current";
-   out+=`<span class="${cls}">${c===" "?" ":c}</span>`;
+   out+=`<span class="${cls}">${c}</span>`;
  }
  $("prompt").innerHTML=out;
  let pct=Math.min(100,target.length?typed.length/target.length*100:0);
