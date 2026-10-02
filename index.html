@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="تایپ‌ریسر فارسی">
+<link rel="manifest" href="manifest.webmanifest">
+<title>تایپ‌ریسر فارسی</title>
+<style>
+:root{--bg:#080c17;--card:#11182a;--card2:#172039;--text:#f5f7ff;--muted:#9ca8c7;--accent:#6ee7ff;--accent2:#8b7cff;--good:#55e69b;--bad:#ff667d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#202b52 0,#080c17 45%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Tahoma,sans-serif;min-height:100vh}
+.app{max-width:720px;margin:auto;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{font-size:22px;margin:0;font-weight:800}
+.badge{font-size:12px;color:var(--accent);background:#102a36;border:1px solid #1e5363;padding:6px 9px;border-radius:999px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat{background:rgba(17,24,42,.86);border:1px solid #222d49;border-radius:14px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-size:19px}.stat span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.track{background:#0d1424;border:1px solid #222d49;border-radius:18px;padding:12px;margin-bottom:14px}
+.trackline{height:9px;background:#252e46;border-radius:99px;overflow:hidden}
+.progress{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .15s}
+.textbox{background:rgba(17,24,42,.92);border:1px solid #273350;border-radius:20px;padding:20px 18px;margin-bottom:12px;min-height:190px}
+.prompt{font-size:23px;line-height:2.15;letter-spacing:.1px;direction:rtl;user-select:none}
+.prompt .correct{color:var(--good)}.prompt .wrong{color:var(--bad);background:rgba(255,102,125,.13);border-radius:4px}.prompt .current{border-bottom:3px solid var(--accent)}
+textarea{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.inputbar{display:flex;gap:9px;align-items:center}
+.fakeinput{flex:1;background:#0b1120;border:1px solid #2b3858;border-radius:14px;padding:13px;color:var(--muted);font-size:14px}
+button{border:0;border-radius:14px;background:linear-gradient(135deg,var(--accent2),#5968ff);color:white;font-weight:800;padding:13px 16px;font-size:14px}
+button.secondary{background:#202a42;color:#d9e1f5}
+.result{display:none;background:#11182a;border:1px solid #2b3858;border-radius:20px;padding:24px;text-align:center;margin-top:14px}
+.result h2{margin:0 0 8px}.big{font-size:46px;font-weight:900}.result p{color:var(--muted)}
+.tips{color:var(--muted);font-size:12px;text-align:center;margin-top:13px;line-height:1.8}
+@media(max-width:420px){.prompt{font-size:20px}.textbox{min-height:180px}.stats{gap:5px}.stat b{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>تایپ‌ریسر فارسی</h1><span class="badge">نسخه ۱</span></header>
+
+<div class="stats">
+ <div class="stat"><b id="wpm">۰</b><span>کلمه/دقیقه</span></div>
+ <div class="stat"><b id="acc">۱۰۰٪</b><span>دقت</span></div>
+ <div class="stat"><b id="time">۰:۰۰</b><span>زمان</span></div>
+ <div class="stat"><b id="mistakes">۰</b><span>اشتباه</span></div>
+</div>
+
+<div class="track"><div class="trackline"><div class="progress" id="progress"></div></div></div>
+
+<div class="textbox" id="box"><div class="prompt" id="prompt"></div></div>
+
+<div class="inputbar">
+ <div class="fakeinput" id="hint">برای شروع روی متن بزنید و تایپ کنید…</div>
+ <button class="secondary" id="newBtn">متن جدید</button>
+</div>
+
+<textarea id="input" dir="rtl" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+
+<div class="result" id="result">
+ <h2>تمام شد! 🎉</h2>
+ <div class="big" id="finalWpm">۰</div>
+ <div>کلمه در دقیقه</div>
+ <p id="finalDetails"></p>
+ <button id="again">دوباره بازی کن</button>
+</div>
+
+<div class="tips">روی متن بزنید تا کیبورد فارسی باز شود. متن‌ها از جمله‌های کوتاه و طبیعی فارسی ساخته شده‌اند.</div>
+</div>
+
+<script>
+const texts=[
+"امروز می‌خواهم کمی فارسی تمرین کنم و سرعت تایپ خودم را بیشتر کنم.",
+"هوای شهر آرام بود و مردم برای خرید به بازار رفته بودند.",
+"یادگیری یک زبان جدید با تمرین کوتاه و روزانه آسان‌تر می‌شود.",
+"وقتی هر روز چند دقیقه تایپ کنیم، دقت و سرعت ما بهتر خواهد شد.",
+"این یک مسابقه ساده است؛ سریع تایپ کن، اما اشتباه نکن.",
+"صبح زود از خانه بیرون رفتم و یک فنجان قهوه سفارش دادم.",
+"گاهی بهترین راه یادگیری این است که چیزی را بارها و به شکل درست تکرار کنیم.",
+"امروز تصمیم گرفتم یک رکورد جدید برای سرعت تایپ فارسی خودم ثبت کنم."
+];
+
+const faDigits=n=>String(n).replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
+let target="",started=false,done=false,startTime=0,timer=null,typed="",mistakes=0;
+
+const $=id=>document.getElementById(id);
+function pick(){
+ target=texts[Math.floor(Math.random()*texts.length)];
+ typed=""; mistakes=0; started=false; done=false;
+ $("input").value=""; $("result").style.display="none"; $("hint").textContent="برای شروع روی متن بزنید و تایپ کنید…";
+ update();
+ render();
+}
+function render(){
+ let out="";
+ for(let i=0;i<target.length;i++){
+   let c=target[i], cls="";
+   if(i<typed.length) cls=typed[i]===c?"correct":"wrong";
+   else if(i===typed.length) cls="current";
+   out+=`<span class="${cls}">${c===" "?" ":c}</span>`;
+ }
+ $("prompt").innerHTML=out;
+ let pct=Math.min(100,target.length?typed.length/target.length*100:0);
+ $("progress").style.width=pct+"%";
+}
+function start(){
+ if(started||done)return;
+ started=true; startTime=Date.now();
+ timer=setInterval(update,250);
+ $("hint").textContent="در حال تایپ…";
+}
+function update(){
+ let elapsed=started?(Date.now()-startTime)/1000:0;
+ let mins=elapsed/60;
+ let words=typed.trim()?typed.trim().split(/\s+/).length:0;
+ let wpm=mins>0?Math.round(words/mins):0;
+ let total=Math.max(typed.length,1);
+ let correct=0;
+ for(let i=0;i<typed.length;i++) if(typed[i]===target[i]) correct++;
+ let acc=typed.length?Math.round(correct/total*100):100;
+ $("wpm").textContent=faDigits(wpm);
+ $("acc").textContent=faDigits(acc)+"٪";
+ $("mistakes").textContent=faDigits(mistakes);
+ let sec=Math.floor(elapsed), m=Math.floor(sec/60), s=String(sec%60).padStart(2,"0");
+ $("time").textContent=faDigits(m+":"+s);
+}
+function finish(){
+ done=true;clearInterval(timer);
+ let elapsed=(Date.now()-startTime)/60000;
+ let words=target.trim().split(/\s+/).length;
+ let wpm=Math.round(words/elapsed);
+ let correct=0;
+ for(let i=0;i<target.length;i++) if(typed[i]===target[i]) correct++;
+ let acc=Math.round(correct/target.length*100);
+ $("finalWpm").textContent=faDigits(wpm);
+ $("finalDetails").textContent=`دقت: ${faDigits(acc)}٪ • اشتباه‌ها: ${faDigits(mistakes)}`;
+ $("result").style.display="block";
+}
+$("input").addEventListener("input",e=>{
+ if(done)return;
+ let val=e.target.value;
+ if(!started && val.length)start();
+ let max=Math.min(val.length,target.length);
+ let newMistakes=0;
+ for(let i=0;i<max;i++) if(val[i]!==target[i]) newMistakes++;
+ mistakes=newMistakes;
+ typed=val;
+ render();update();
+ if(val===target)finish();
+});
+$("box").addEventListener("click",()=>{ $("input").focus(); });
+$("prompt").addEventListener("click",()=>{ $("input").focus(); });
+$("newBtn").addEventListener("click",pick);
+$("again").addEventListener("click",pick);
+pick();
+</script>
+</body>
+</html>
